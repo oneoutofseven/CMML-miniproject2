@@ -1,0 +1,167 @@
+---
+title: "Benchmark_figure"
+author: '2053'
+date: "2025-04-20"
+output: html_document
+---
+
+```{r, warning=FALSE}
+# Install and load required CRAN packages, one by one
+
+if (!requireNamespace("reshape2", quietly = TRUE)) {
+  install.packages("reshape2", repos = "https://cloud.r-project.org")
+}
+library(reshape2)
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+}
+library(ggplot2)
+
+if (!requireNamespace("viridisLite", quietly = TRUE)) {
+  install.packages("viridisLite", repos = "https://cloud.r-project.org")
+}
+library(viridisLite)
+
+if (!requireNamespace("viridis", quietly = TRUE)) {
+  install.packages("viridis", repos = "https://cloud.r-project.org")
+}
+library(viridis)
+
+if (!requireNamespace("ggtext", quietly = TRUE)) {
+  install.packages("ggtext", repos = "https://cloud.r-project.org")
+}
+library(ggtext)
+
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork", repos = "https://cloud.r-project.org")
+}
+library(patchwork)
+
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr", repos = "https://cloud.r-project.org")
+}
+library(dplyr)
+
+if (!requireNamespace("PRROC", quietly = TRUE)) {
+  install.packages("PRROC", repos = "https://cloud.r-project.org")
+}
+library(PRROC)
+```
+
+```{r, warning=FALSE}
+# 1. Load benchmark results
+e <- readRDS("./benchmark.results.rds")
+
+# 2. Ordering: compute max AUPRC per dataset and median AUPRC per method
+datmax <- sort(
+  tapply(e$AUPRC, e$dataset, FUN = function(x) max(x, na.rm = TRUE))
+)
+metmax <- sort(
+  tapply(e$AUPRC, e$method,  FUN = function(x) median(x, na.rm = TRUE))
+)
+
+# Apply factor levels for consistent plotting order
+e$dataset <- factor(e$dataset, levels = names(datmax))
+e$method  <- factor(e$method,  levels = names(metmax))
+
+# 3. Compute AUPRC rank within each dataset
+e$AUPRC.rank <- with(e,
+  ave(AUPRC, dataset, FUN = function(x) rank(x, ties.method = "first"))
+)
+
+# 4. Style settings: point color, border, and text labels
+e <- e %>%
+  mutate(
+    point.colour  = viridisLite::viridis(100)[ round(AUPRC * 99) + 1 ],
+    border.colour = ifelse(AUPRC.rank == max(AUPRC.rank), "black", NA),
+    rounded       = round(AUPRC, 2),
+    text.colour   = ifelse(rounded >= 0.5, "black", "white"),
+    text.colour   = replace(text.colour, AUPRC.rank == 1, NA),
+    text          = gsub("1\\.00","1.0",
+                       gsub("0\\.",".", sprintf("%.2f", AUPRC)))
+  )
+
+# 5. Select which methods to display and which to highlight
+valid_methods    <- c("scDblFinder.clusters", "scDblFinder.random", "DoubletFinder")
+highlight_methods <- c("scDblFinder.clusters", "scDblFinder.random")
+
+# 6. AUPRC dot plot (p1)
+p1 <- ggplot(e, aes(dataset, method)) +
+  geom_point(aes(size = AUPRC, colour = AUPRC.rank)) +
+  scale_size(range = c(10, 20)) +
+  scale_colour_viridis_c(
+    breaks = c(1, 10), labels = c("worst", "best"),
+    guide = guide_colorbar(barheight = unit(2, "cm"))
+  ) +
+  geom_point(
+    data = e[e$AUPRC.rank == length(unique(e$method)), ],
+    shape = 21, colour = "black",
+    aes(size = AUPRC), stroke = 1.1, show.legend = FALSE
+  ) +
+  geom_text(aes(label = text),
+            size = 3,
+            colour = ifelse(e$AUPRC.rank >= 3, "black", "white")) +
+  labs(colour = "AUPRC rank") +
+  theme_minimal()
+
+# 7. Average runtime bar plot (p2)
+ag <- aggregate(e[ , "elapsed", drop = FALSE],
+                by = e[ , "method",  drop = FALSE],
+                FUN = mean)
+
+p2 <- ggplot(ag, aes(method, elapsed)) +
+  geom_col(width = 0.75, fill = "#00204DFF") +
+  geom_text(aes(
+    y = 75,
+    label = paste0(round(elapsed), "s"),
+    colour = elapsed > 200
+  ), hjust = 1) +
+  scale_colour_manual(values = c("TRUE" = "grey", "FALSE" = "black"), guide = FALSE) +
+  scale_y_reverse() +
+  coord_flip() +
+  ylab("Mean runtime (s)") +
+  theme(
+    axis.text.y        = element_blank(),
+    axis.title.y       = element_blank(),
+    axis.text.x        = element_text(angle = 90),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_line(colour = "lightgrey")
+  )
+
+# 8. Dataset description bar plot (p3)
+m <- readRDS("./dataset_desc.rds")
+selected <- c("cline-ch", "HMEC-rep-MULTI", "nuc-MULTI", "pdx-MULTI")
+m <- m[selected, , drop = FALSE]
+m$dataset <- factor(rownames(m), levels = names(datmax))
+
+p3 <- ggplot(m, aes(dataset, ncells, fill=ve)) + 
+  geom_col() + labs(x="",y="# cells") + 
+  theme(axis.text.x=element_blank(), panel.grid.major.x=element_blank(),
+        panel.grid.minor=element_blank()) +
+  viridis::scale_fill_viridis(option="B", direction=-1, breaks=range(m$ve), labels=c("Low","High"),
+                              name="Dataset\nsimplicity\n") +
+  guides(fill=guide_colourbar(barheight=unit(1, "cm"))) +
+  scale_y_sqrt(breaks=c(1000,5000,10000))
+
+# 9. Combine with patchwork
+p <- ((plot_spacer() / p2 + plot_layout(heights = c(1, 3))) |
+      (p3 / p1 + plot_layout(heights = c(1, 3.5)))) +
+     plot_layout(widths = c(1, 7))
+p
+
+# Save to PDF
+pdf("Figure.pdf", width = 10, height = 10)
+p
+dev.off()
+
+png("Figure.png",
+    width  = 10,     
+    height = 10,
+    units  = "in",   
+    res    = 300      
+)
+print(p)             
+dev.off()            
+```
