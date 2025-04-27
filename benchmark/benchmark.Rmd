@@ -7,6 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 # 1. Load reticulate
+if (!requireNamespace("reticulate", quietly = TRUE)) {
+  install.packages("reticulate")
+}
 library(reticulate)
 
 # 2. Create the conda env if it doesn't exist
