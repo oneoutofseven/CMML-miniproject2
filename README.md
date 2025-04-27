@@ -14,7 +14,7 @@
   ```bash
   git clone https://github.com/oneoutofseven/CMML-miniproject2.git
   ```
-- **If downloading manually**, additional files must be retrieved from **Release**:
+- **If downloading manually**, additional files must be retrieved from **Releases(Tag)**:
   - Place `pbmc.rds` into `analysis/dataset/`
   - Place `cline-ch.rds` into `benchmark/datasets/`
 
