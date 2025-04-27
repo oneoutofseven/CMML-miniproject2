@@ -86,7 +86,5 @@
 
 ## 7. References
 
-- Germain, P.L., Lun, A.T.L., Meixide, C.G., Macnair, W., and Robinson, M.D. (2022).  
-  *Doublet identification in single-cell sequencing data using scDblFinder.*  
-  F1000Research, 10, 979. [https://doi.org/10.12688/f1000research.55869.1](https://doi.org/10.12688/f1000research.55869.1)
+Germain, P.-L. et al. (2021) ‘Doublet identification in single-cell sequencing data using scDblFinder’, F1000Research, 10, p. 979. Available at: https://doi.org/10.12688/f1000research.73600.2.
 
