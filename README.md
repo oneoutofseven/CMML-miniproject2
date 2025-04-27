@@ -1,77 +1,86 @@
-\section*{CMML-miniproject2}
+# Doublet Detection with scDblFinder
 
-\subsection*{Overview}
+## 1. Project Goals
 
-This project systematically evaluates the performance of \textbf{scDblFinder} for doublet detection in single-cell RNA-seq data, and benchmarks it against \textbf{DoubletFinder} and \textbf{Scrublet} across multiple datasets, including both simulated and real data.
+1. **Objective 1:** Evaluate the sensitivity of **scDblFinder** under different doublet rates (0.1%, 0.5%, 1%, 5%).
+2. **Objective 2:** Assess the impact of doublet removal on clustering structure (ARI).
+3. **Objective 3:** Benchmark **scDblFinder**, **DoubletFinder**, and **Scrublet** across real datasets.
 
-\subsection*{Project Structure}
-\begin{itemize}
-  \item \texttt{/analysis/} -- Main analysis scripts for doublet detection on PBMC dataset.
-  \item \texttt{/benchmark/} -- Benchmarking scripts and pre-computed results.
-  \item \texttt{misc.R} -- Utility functions.
-  \item \texttt{/dataset/} -- Input datasets (e.g., \texttt{pbmc.rds}, \texttt{GSM2560248\_noAmbiguous.processed.CD.rds}).
-\end{itemize}
+---
 
-\subsection*{Environment and Dependencies}
+## 2. Important Notes Before Running
 
-Please install the following R packages:
-\begin{itemize}
-  \item Seurat (\textbf{v4.4.0} recommended)
-  \item scDblFinder
-  \item SingleCellExperiment, scran, scater, splatter
-  \item PRROC, igraph, cowplot, plotly
-\end{itemize}
+- **Recommended to clone the repository to handle large files with Git LFS**:
+  ```bash
+  git clone https://github.com/oneoutofseven/CMML-miniproject2.git
+  ```
+- **If downloading manually**, additional files must be retrieved from **Release**:
+  - Place `pbmc.rds` into `analysis/dataset/`
+  - Place `cline-ch.rds` into `benchmark/datasets/`
 
-\textbf{Important:} To ensure compatibility, Seurat v4 is required. If you already have Seurat v5 or other versions installed, reinstall v4 as follows:
-\begin{verbatim}
-remove.packages(c("Seurat", "SeuratObject"))
-install.packages('Seurat', repos = c('https://satijalab.r-universe.dev'))
-packageVersion("Seurat")
-\end{verbatim}
+- **Seurat version:**  
+  scDblFinder works best with **Seurat v4.4.0**.  
+  Install with:
+  ```r
+  remove.packages(c("Seurat", "SeuratObject"))
+  install.packages('Seurat', repos = c('https://satijalab.r-universe.dev'))
+  packageVersion("Seurat") # Should be ‘4.4.0’
+  ```
 
-\subsection*{How to Use}
+---
 
-\textbf{Recommended:}
-\begin{itemize}
-  \item Clone the repository using Git (due to Git LFS large files):
-\begin{verbatim}
-git clone https://github.com/oneoutofseven/CMML-miniproject2.git
-\end{verbatim}
-\end{itemize}
+## 3. Running the Code
 
-\textbf{Alternative:}
-\begin{itemize}
-  \item If manually downloading from GitHub, please also download necessary datasets from the \textbf{Release} page:
-  \begin{itemize}
-    \item Place \texttt{pbmc.rds} into \texttt{analysis/dataset/}.
-    \item Place \texttt{cline-ch.rds} into \texttt{benchmark/datasets/}.
-  \end{itemize}
-\end{itemize}
+### 3.1 Main Analysis (PBMC Dataset)
 
-\subsection*{Execution Steps}
+- Open and run **`analysis/scDblFinder.Rmd`**
+- This will perform:
+  - Data preprocessing (QC, normalization, PCA)
+  - scDblFinder doublet detection
+  - 3D PCA visualization
+  - ROC curve evaluation using SNP-labeled dataset
+  - Simulation benchmarks (Precision/Recall/F1)
+  - Clustering impact analysis
 
-\begin{enumerate}
-  \item Open and run \texttt{analysis/scDblFinder.Rmd} to reproduce doublet detection analysis and simulation evaluation.
-  \item (Optional) Run \texttt{benchmark/benchmark.Rmd} to recompute benchmarking results (takes $\sim$2 hours).
-  \item Alternatively, directly run \texttt{benchmark/benchmark\_figure.Rmd} to plot figures using pre-computed \texttt{benchmark.results.rds}.
-\end{enumerate}
+### 3.2 Benchmarking (Real Dataset Comparison)
 
-\subsection*{Quick Summary}
+- **Option 1 (Recompute benchmark results, slow ~2 hours)**:  
+  Run **`benchmark/benchmark.Rmd`**
 
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{File} & \textbf{Function} & \textbf{Run?} \\
-\hline
-\texttt{scDblFinder.Rmd} & PBMC dataset analysis & Required \\
-\texttt{benchmark.Rmd} & Full benchmark recomputation & Optional (slow) \\
-\texttt{benchmark\_figure.Rmd} & Plot benchmark figures & Recommended \\
-\hline
-\end{tabular}
+- **Option 2 (Recommended)**:  
+  Run **`benchmark/benchmark_figure.Rmd`** to plot results using the provided **`benchmark.results.rds`**
 
-\subsection*{References}
+---
 
-\begin{itemize}
-\item Germain, P.L., Lun, A.T.L., Meixide, C.G., Macnair, W., and Robinson, M.D. (2022).\\
-\textit{Doublet identification in single-cell sequencing data using scDblFinder}. F1000Research, 10, 979. \href{https://doi.org/10.12688/f1000research.55869.1}{DOI:10.12688/f1000research.55869.1}
-\end{itemize}
+## 4. Summary of Files
+
+| File | Description | Notes |
+|:-----|:------------|:------|
+| `analysis/scDblFinder.Rmd` | PBMC data analysis and simulations | **Must run** |
+| `benchmark/benchmark.Rmd` | Full benchmarking on four datasets | ⚠️ Optional (very slow) |
+| `benchmark/benchmark_figure.Rmd` | Plot benchmark results | **Recommended** |
+
+---
+
+## 5. Key Findings
+
+- scDblFinder maintains high recall even at doublet rates below 1%.
+- Removing predicted doublets has minimal impact on clustering when doublet rate is <5%, supporting 5% as a practical ignore threshold.
+- Benchmarking shows that scDblFinder (clusters mode) achieves the best balance of accuracy and runtime compared to DoubletFinder and Scrublet.
+
+---
+
+## 6. Future Directions
+
+- Integrate graph neural networks and multimodal data to achieve hierarchical doublet detection.
+- Develop semi-supervised frameworks leveraging spatial and proteomic information (e.g., CITE-seq, spatial transcriptomics).
+- Incorporate cell-type hierarchies and differentiation trajectories to improve homotypic doublet detection, especially in developmental or tumor contexts.
+
+---
+
+## 7. References
+
+- Germain, P.L., Lun, A.T.L., Meixide, C.G., Macnair, W., and Robinson, M.D. (2022).  
+  *Doublet identification in single-cell sequencing data using scDblFinder.*  
+  F1000Research, 10, 979. [https://doi.org/10.12688/f1000research.55869.1](https://doi.org/10.12688/f1000research.55869.1)
 
