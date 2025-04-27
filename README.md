@@ -44,11 +44,17 @@
 
 ### 3.2 Benchmarking (Real Dataset Comparison)
 
-- **Option 1 (Recompute benchmark results, slow ~2 hours)**:  
-  Run **`benchmark/benchmark.Rmd`**
+- **Important:**  
+  Normally, you should run **`benchmark/benchmark.Rmd`** to generate the benchmark results.  
+  However, since this step is very time-consuming (~2 hours), the generated results (`benchmark.results.rds`) have already been provided.
 
-- **Option 2 (Recommended)**:  
-  Run **`benchmark/benchmark_figure.Rmd`** to plot results using the provided **`benchmark.results.rds`**
+- **What to do:**  
+  Simply run **`benchmark/benchmark_figure.Rmd`** to load the provided results and plot the benchmark figures.
+
+- **Summary:**
+  - `benchmark/benchmark.Rmd`: ⚡ Full benchmarking (already done, result provided)
+  - `benchmark/benchmark.results.rds`: 📄 Pre-computed benchmark results
+  - `benchmark/benchmark_figure.Rmd`: 📈 Plot benchmark figures directly
 
 ---
 
