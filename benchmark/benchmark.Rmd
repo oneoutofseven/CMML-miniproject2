@@ -52,6 +52,11 @@ if (!requireNamespace("scDblFinder", quietly = TRUE)) {
 }
 library(scDblFinder)
 
+if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
+  remotes::install_github('https://github.com/ekernf01/DoubletFinder', force = T)
+}
+library(DoubletFinder)
+
 if (!requireNamespace("DoubletCollection", quietly = TRUE)) {
   if(!require(devtools)){
   install.packages("devtools") 
