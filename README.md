@@ -45,7 +45,7 @@
 ### 3.2 Benchmarking (Real Dataset Comparison)
 
 - **Important:**  
-  Normally, you should run **`benchmark/benchmark.Rmd`** to generate the benchmark results.  
+  Normally, you should run **`benchmark/benchmark.Rmd`** to generate the benchmark results and then run **`benchmark/benchmark_figure.Rmd`**.  
   However, since this step is very time-consuming (~2 hours), the generated results (`benchmark.results.rds`) have already been provided.
 
 - **What to do:**  
