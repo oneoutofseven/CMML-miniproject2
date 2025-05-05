@@ -68,23 +68,7 @@
 
 ---
 
-## 5. Key Findings
-
-- scDblFinder maintains high recall even at doublet rates below 1%.
-- Removing predicted doublets has minimal impact on clustering when doublet rate is <5%, supporting 5% as a practical ignore threshold.
-- Benchmarking shows that scDblFinder (clusters mode) achieves the best balance of accuracy and runtime compared to DoubletFinder and Scrublet.
-
----
-
-## 6. Future Directions
-
-- Integrate graph neural networks and multimodal data to achieve hierarchical doublet detection.
-- Develop semi-supervised frameworks leveraging spatial and proteomic information (e.g., CITE-seq, spatial transcriptomics).
-- Incorporate cell-type hierarchies and differentiation trajectories to improve homotypic doublet detection, especially in developmental or tumor contexts.
-
----
-
-## 7. References
+## 5. References
 
 Germain, P.-L. et al. (2021) ‘Doublet identification in single-cell sequencing data using scDblFinder’, F1000Research, 10, p. 979. Available at: https://doi.org/10.12688/f1000research.73600.2.
 
